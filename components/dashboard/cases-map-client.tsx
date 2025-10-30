@@ -26,6 +26,12 @@ interface CasesMapClientProps {
 export function CasesMapClient({ cases }: CasesMapClientProps) {
   const [filteredCases, setFilteredCases] = useState<Case[]>([])
   const [isFiltering, setIsFiltering] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+
+  // Set isClient to true after component mounts
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const handleRegionFilter = (cases: Case[]) => {
     setFilteredCases(cases)
@@ -39,6 +45,17 @@ export function CasesMapClient({ cases }: CasesMapClientProps) {
       onset_date: case_.onset_date || new Date(case_.created_at).toISOString().split('T')[0],
       report_date: case_.report_date || new Date().toISOString().split('T')[0]
     }))
+  }
+
+  // Don't render anything until client-side to prevent hydration issues
+  if (!isClient) {
+    return (
+      <div className="space-y-4">
+        <div className="h-96 w-full bg-muted rounded-lg flex items-center justify-center">
+          <p className="text-muted-foreground">Loading map...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

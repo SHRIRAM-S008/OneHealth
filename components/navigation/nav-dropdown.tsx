@@ -21,7 +21,6 @@ export function NavDropdown() {
   }
 
   const additionalItems = [
-    { href: "/dashboard/reports", label: t("reports") },
     { href: "/dashboard/data-quality", label: t("dataQuality") },
     { href: "/dashboard/predictions", label: t("predictions") },
     { href: "/dashboard/settings", label: t("settings") },
@@ -29,15 +28,32 @@ export function NavDropdown() {
     // { href: "/dashboard/organization", label: t("organization") },
   ]
 
+  // Close dropdown when clicking outside
+  const handleClickOutside = () => {
+    setIsOpen(false);
+  };
+
   return (
-    <div className="relative hidden md:block">
-      <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-1">
+    <div className="relative">
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="flex items-center gap-1 h-8 px-2"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+      >
         <MoreVertical className="w-4 h-4" />
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50">
+        <div 
+          className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50"
+          role="menu"
+          aria-orientation="vertical"
+          aria-labelledby="menu-button"
+        >
           <nav className="flex flex-col py-2">
             {additionalItems.map((item) => (
               <Link
@@ -45,6 +61,7 @@ export function NavDropdown() {
                 href={item.href}
                 className="px-4 py-2 hover:bg-muted text-sm font-medium transition-colors"
                 onClick={() => setIsOpen(false)}
+                role="menuitem"
               >
                 {item.label}
               </Link>

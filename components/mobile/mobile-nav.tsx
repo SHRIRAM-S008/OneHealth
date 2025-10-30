@@ -14,10 +14,10 @@ export function MobileNav() {
     { href: "/dashboard/upload", label: "Upload" },
     { href: "/dashboard/outbreaks", label: "Outbreaks" },
     { href: "/dashboard/analytics", label: "Analytics" },
+    { href: "/dashboard/reports", label: "Reports" },
   ]
 
   const additionalItems = [
-    { href: "/dashboard/reports", label: "Reports" },
     { href: "/dashboard/data-quality", label: "Data Quality" },
     { href: "/dashboard/predictions", label: "Predictions" },
     { href: "/dashboard/settings", label: "Settings" },
