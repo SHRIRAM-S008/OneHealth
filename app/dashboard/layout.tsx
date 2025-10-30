@@ -6,7 +6,6 @@ import Link from "next/link"
 import { NotificationBell } from "@/components/notifications/notification-bell"
 import { ToastProvider } from "@/components/notifications/toast-provider"
 import { MobileNav } from "@/components/mobile/mobile-nav"
-import { NavDropdown } from "@/components/navigation/nav-dropdown"
 
 export default async function DashboardLayout({
   children,
@@ -69,49 +68,61 @@ export default async function DashboardLayout({
 
         {/* Navigation - Desktop Only - Main Pages */}
         <nav className="border-b border-border bg-card hidden md:block sticky top-16 z-40">
-          <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
-            <div className="flex gap-6 overflow-x-auto py-3">
-              <Link
-                href="/dashboard"
-                className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/dashboard/cases"
-                className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
-              >
-                Cases
-              </Link>
-              <Link
-                href="/dashboard/upload"
-                className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
-              >
-                Upload
-              </Link>
-              <Link
-                href="/dashboard/outbreaks"
-                className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
-              >
-                Outbreaks
-              </Link>
-              <Link
-                href="/dashboard/analytics"
-                className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
-              >
-                Analytics
-              </Link>
-              <Link
-                href="/dashboard/reports"
-                className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
-              >
-                Reports
-              </Link>
-            </div>
-            {/* 3-dot menu at the end of navigation bar */}
-            <div className="py-3">
-              <NavDropdown />
-            </div>
+          <div className="max-w-7xl mx-auto px-4 flex gap-6 overflow-x-auto py-3">
+            <Link
+              href="/dashboard"
+              className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/dashboard/cases"
+              className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
+            >
+              Cases
+            </Link>
+            <Link
+              href="/dashboard/upload"
+              className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
+            >
+              Upload
+            </Link>
+            <Link
+              href="/dashboard/outbreaks"
+              className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
+            >
+              Outbreaks
+            </Link>
+            <Link
+              href="/dashboard/analytics"
+              className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
+            >
+              Analytics
+            </Link>
+            <Link
+              href="/dashboard/reports"
+              className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
+            >
+              Reports
+            </Link>
+            <Link
+              href="/dashboard/data-quality"
+              className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
+            >
+              Data Quality
+            </Link>
+            <Link
+              href="/dashboard/predictions"
+              className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
+            >
+              Predictions
+            </Link>
+            <Link
+              href="/dashboard/settings"
+              className="py-1 px-2 border-b-2 border-transparent hover:border-primary text-sm font-medium whitespace-nowrap"
+            >
+              Settings
+            </Link>
           </div>
         </nav>
 
