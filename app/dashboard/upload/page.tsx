@@ -35,21 +35,36 @@ export default function UploadPage() {
       const formData = new FormData()
       formData.append("file", file)
 
+      console.log("Sending upload request")
       const response = await fetch("/api/upload-cases", {
         method: "POST",
         body: formData,
       })
 
+      console.log("Upload response status:", response.status)
       const data = await response.json()
+      console.log("Upload response data:", data)
 
       if (!response.ok) {
-        throw new Error(data.error || "Upload failed")
+        const errorMessage = data.error || data.message || "Upload failed"
+        const errorDetails = data.details ? `: ${data.details}` : ""
+        throw new Error(`${errorMessage}${errorDetails}`)
       }
 
       setResults(data)
       setFile(null)
     } catch (err) {
+      console.error("Upload error:", err)
       setError(err instanceof Error ? err.message : "An error occurred during upload")
+      
+      // Additional error details for debugging
+      if (err instanceof Error && err.message.includes("fetch")) {
+        setError("Network error: Please check your internet connection and try again.")
+      } else if (err instanceof Error && err.message.includes("404")) {
+        setError("API endpoint not found. Please check if the server is running.")
+      } else if (err instanceof Error && err.message.includes("401")) {
+        setError("Authentication error. Please try logging in again.")
+      }
     } finally {
       setUploading(false)
     }

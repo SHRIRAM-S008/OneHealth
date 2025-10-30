@@ -15,19 +15,46 @@ interface CSVRow {
 }
 
 function parseCSV(content: string): CSVRow[] {
-  const lines = content.trim().split("\n")
-  if (lines.length < 2) throw new Error("CSV file is empty")
+  // Handle different line endings
+  const lines = content.trim().split(/\r?\n/)
+  if (lines.length < 2) throw new Error("CSV file is empty or invalid format")
 
+  // Parse headers
   const headers = lines[0].split(",").map((h) => h.trim().toLowerCase())
+  
+  // Validate required headers
+  const requiredHeaders = ["disease_name", "onset_date"]
+  const missingHeaders = requiredHeaders.filter(header => !headers.includes(header))
+  
+  if (missingHeaders.length > 0) {
+    throw new Error(`Missing required columns: ${missingHeaders.join(", ")}`)
+  }
+
   const rows: CSVRow[] = []
 
+  // Regular expression to parse CSV lines with quoted values
+  const csvRegex = /(?<=^|,)("(?:[^"]|"")*"|[^,]*)(?=,|$)/g
+
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(",").map((v) => v.trim())
+    // Skip empty lines
+    if (lines[i].trim() === "") continue
+    
+    // Parse values using regex to handle quoted values correctly
+    const matches = lines[i].match(csvRegex) || []
+    const values = matches.map(v => {
+      // Remove surrounding quotes and unescape double quotes
+      if (v.startsWith('"') && v.endsWith('"')) {
+        return v.substring(1, v.length - 1).replace(/""/g, '"')
+      }
+      return v.trim()
+    })
+    
     const row: CSVRow = {}
 
     headers.forEach((header, idx) => {
-      if (values[idx]) {
-        row[header as keyof CSVRow] = values[idx]
+      const value = values[idx]
+      if (value !== undefined && value !== "") {
+        row[header as keyof CSVRow] = value
       }
     })
 
@@ -43,13 +70,22 @@ async function categorizeDiseases(diseases: string[]): Promise<Record<string, st
 
   for (const disease of uniqueDiseases) {
     try {
+      // Check if OPENAI_API_KEY is configured
+      if (!process.env.OPENAI_API_KEY) {
+        console.warn("OPENAI_API_KEY not configured, using default category 'other'")
+        categories[disease] = "other"
+        continue
+      }
+
       const { text } = await generateText({
         model: "openai/gpt-4o-mini",
         prompt: `Categorize this disease into one of these categories: infectious, chronic, parasitic, environmental, genetic, or other. Disease: "${disease}". Respond with only the category name.`,
       })
 
       categories[disease] = text.trim().toLowerCase()
-    } catch {
+    } catch (error) {
+      console.error(`Failed to categorize disease '${disease}':`, error)
+      // Use a default category if AI categorization fails
       categories[disease] = "other"
     }
   }
@@ -58,8 +94,11 @@ async function categorizeDiseases(diseases: string[]): Promise<Record<string, st
 }
 
 export async function POST(request: NextRequest) {
+  console.log("Upload request received")
+  
   try {
     const supabase = await createClient()
+    console.log("Supabase client created successfully")
     // Create a default organization if none exists
     const { data: organizations } = await supabase.from("organizations").select("id").limit(1)
     
@@ -87,13 +126,41 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData()
     const file = formData.get("file") as File
+    console.log("File received:", file?.name, file?.size)
 
     if (!file) {
+      console.log("No file provided in request")
       return NextResponse.json({ error: "No file provided" }, { status: 400 })
     }
 
+    // Validate file type
+    console.log("File type:", file.type, "File name:", file.name)
+    if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
+      console.log("Invalid file type detected")
+      return NextResponse.json({ error: "Invalid file type. Please upload a CSV file." }, { status: 400 })
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: "File too large. Maximum file size is 5MB." }, { status: 400 })
+    }
+
     const content = await file.text()
-    const rows = parseCSV(content)
+    
+    // Validate content is not empty
+    if (!content.trim()) {
+      return NextResponse.json({ error: "File is empty" }, { status: 400 })
+    }
+    
+    let rows: CSVRow[] = []
+    try {
+      rows = parseCSV(content)
+    } catch (parseError) {
+      return NextResponse.json({ 
+        error: "Failed to parse CSV file", 
+        details: parseError instanceof Error ? parseError.message : "Invalid CSV format" 
+      }, { status: 400 })
+    }
 
     // Extract unique diseases for categorization
     const diseases = rows.map((r) => r.disease_name || "Unknown").filter(Boolean)
@@ -108,8 +175,7 @@ export async function POST(request: NextRequest) {
 
         return {
           organization_id: organizationId,
-          // REMOVED user_id to allow public uploads
-          // user_id: user.id,
+          user_id: null,  // Set to null for public uploads
           patient_age: row.patient_age ? Number.parseInt(row.patient_age) : null,
           patient_gender: row.patient_gender || null,
           disease_name: row.disease_name,
@@ -118,8 +184,14 @@ export async function POST(request: NextRequest) {
           onset_date: row.onset_date,
           report_date: new Date().toISOString().split("T")[0],
           location: row.location || null,
-          latitude: row.latitude ? Number.parseFloat(row.latitude) : null,
-          longitude: row.longitude ? Number.parseFloat(row.longitude) : null,
+          latitude: row.latitude ? (() => {
+            const lat = parseFloat(row.latitude!);
+            return isNaN(lat) || lat < -90 || lat > 90 ? null : lat;
+          })() : null,
+          longitude: row.longitude ? (() => {
+            const lon = parseFloat(row.longitude!);
+            return isNaN(lon) || lon < -180 || lon > 180 ? null : lon;
+          })() : null,
           notes: row.notes || null,
           status: "reported",
         }

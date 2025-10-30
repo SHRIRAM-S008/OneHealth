@@ -16,7 +16,7 @@ CREATE TABLE organizations (
 CREATE TABLE disease_cases (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,  -- Changed to allow NULL values
   patient_age INTEGER,
   patient_gender TEXT CHECK (patient_gender IN ('M', 'F', 'Other')),
   disease_name TEXT NOT NULL,
@@ -89,16 +89,16 @@ CREATE POLICY "Users can insert their organization" ON organizations
 
 -- Disease Cases RLS Policies
 CREATE POLICY "Users can view their own cases" ON disease_cases
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (auth.uid() = user_id OR user_id IS NULL);
 
 CREATE POLICY "Users can insert their own cases" ON disease_cases
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
 
 CREATE POLICY "Users can update their own cases" ON disease_cases
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (auth.uid() = user_id OR user_id IS NULL);
 
 CREATE POLICY "Users can delete their own cases" ON disease_cases
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE USING (auth.uid() = user_id OR user_id IS NULL);
 
 -- Outbreaks RLS Policies (public read, admin write)
 CREATE POLICY "Anyone can view outbreaks" ON outbreaks

@@ -1,0 +1,3 @@
+patient_age,patient_gender,disease_name,symptoms,onset_date,location,latitude,longitude,notes
+35,M,Influenza,"fever, cough, sore throat",2024-10-20,Delhi,28.7041,77.1025,"Confirmed case"
+28,F,"Dengue Fever","high fever, headache, body ache",2024-10-21,Mumbai,19.0760,72.8777,"Suspected case"
