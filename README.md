@@ -40,11 +40,38 @@ To deploy this application manually to Vercel:
    Set the following environment variables in your Vercel project settings:
    - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+   - `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
+   - `SEED_TOKEN` - Your seed token for the API
 
 4. **Build Settings** (if not auto-detected):
    - Build Command: `pnpm build`
    - Output Directory: `.next`
    - Install Command: `pnpm install`
+
+## Environment Setup
+
+To run this application locally:
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+2. Update `.env.local` with your actual Supabase credentials:
+   - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+   - `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
+   - `SEED_TOKEN` - Your seed token for the API
+
+3. Install dependencies and run:
+   ```bash
+   pnpm install
+   pnpm dev
+   ```
+
+## Security Notice
+
+**Important**: Never commit sensitive credentials to the repository. The `.env.local` file is excluded from version control for security reasons. Always use the `.env.local.example` file as a template and set your actual credentials in the environment variables of your deployment platform (Vercel, Netlify, etc.).
 
 ## Build your app
 
