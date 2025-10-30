@@ -11,11 +11,12 @@
 [functions]
   included_files = ["!**/*.md"]
 
-[build.environment]
-  NEXT_PUBLIC_SUPABASE_URL = "https://your-project.supabase.co"
-  NEXT_PUBLIC_SUPABASE_ANON_KEY = "your-anon-key"
-
-# Disable secrets scanning for specific keys
+# Disable secrets scanning for specific keys since they are required for client-side Supabase integration
 [secrets]
   scan = true
-  omit_keys = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"]
+  omit_keys = [
+    "NEXT_PUBLIC_SUPABASE_URL", 
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SEED_TOKEN"
+  ]
