@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [demoLoading, setDemoLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -38,6 +39,29 @@ export default function LoginPage() {
       setError("An unexpected error occurred")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDemoLogin = async () => {
+    setError(null)
+    setDemoLoading(true)
+
+    try {
+      // For prototype purposes, we'll use the demo account you created
+      const { error } = await supabase.auth.signInWithPassword({
+        email: "demo123@gmail.com",
+        password: "123456789",
+      })
+
+      if (error) {
+        setError(error.message)
+      } else {
+        router.push("/dashboard")
+      }
+    } catch (err) {
+      setError("An unexpected error occurred")
+    } finally {
+      setDemoLoading(false)
     }
   }
 
@@ -75,6 +99,23 @@ export default function LoginPage() {
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+          
+          {/* Demo Login Button for Prototype */}
+          <div className="mt-4 pt-4 border-t border-border">
+            <Button 
+              type="button" 
+              variant="secondary" 
+              className="w-full" 
+              onClick={handleDemoLogin}
+              disabled={demoLoading}
+            >
+              {demoLoading ? "Logging in..." : "Demo Login (Bypass)"}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              For prototype demonstration purposes only
+            </p>
+          </div>
+          
           <div className="mt-4 text-center text-sm">
             Don't have an account?{" "}
             <Link href="/auth/sign-up" className="text-primary hover:underline">
