@@ -60,32 +60,12 @@ async function categorizeDiseases(diseases: string[]): Promise<Record<string, st
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Get user's organization
-    const { data: caseData } = await supabase
-      .from("disease_cases")
-      .select("organization_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .single()
-
-    let organizationId = caseData?.organization_id
-
-    if (!organizationId) {
-      // Create a default organization if none exists
+ Create a default organization if none exists
       const { data: newOrg } = await supabase
         .from("organizations")
         .insert([
           {
-            name: "Default Organization",
+            name: "Public Organization",
             type: "hospital",
             location: "Unknown",
           },
@@ -93,8 +73,8 @@ export async function POST(request: NextRequest) {
         .select()
         .single()
 
-      organizationId = newOrg?.id
-    }
+      var organizationId = newOrg?.id
+    // }
 
     const formData = await request.formData()
     const file = formData.get("file") as File
@@ -119,7 +99,8 @@ export async function POST(request: NextRequest) {
 
         return {
           organization_id: organizationId,
-          user_id: user.id,
+          // REMOVED user_id to allow public uploads
+          // user_id: user.id,
           patient_age: row.patient_age ? Number.parseInt(row.patient_age) : null,
           patient_gender: row.patient_gender || null,
           disease_name: row.disease_name,

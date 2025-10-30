@@ -46,16 +46,18 @@ export default function CasesPage() {
   const loadCases = async () => {
     setLoading(true)
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      // REMOVED user authentication check to allow public access
+      // const {
+      //   data: { user },
+      // } = await supabase.auth.getUser()
 
-      if (!user) return
+      // if (!user) return
 
+      // REMOVED user_id filter to show all cases
       const { data } = await supabase
         .from("disease_cases")
         .select("*")
-        .eq("user_id", user.id)
+        // Removed: .eq("user_id", user.id)
         .order("created_at", { ascending: false })
 
       setCases(data || [])

@@ -9,28 +9,30 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status")
     const limit = Number.parseInt(searchParams.get("limit") || "10")
 
+    // REMOVED user authentication check to allow public access
     // Get authenticated user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    // const {
+    //   data: { user },
+    // } = await supabase.auth.getUser()
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    // if (!user) {
+    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    // }
 
+    // REMOVED user organization lookup and fetch all cases
     // Get user's organization
-    const { data: userRole } = await supabase
-      .from("user_roles")
-      .select("organization_id")
-      .eq("user_id", user.id)
-      .single()
+    // const { data: userRole } = await supabase
+    //   .from("user_roles")
+    //   .select("organization_id")
+    //   .eq("user_id", user.id)
+    //   .single()
 
-    if (!userRole) {
-      return NextResponse.json({ error: "Organization not found" }, { status: 404 })
-    }
+    // if (!userRole) {
+    //   return NextResponse.json({ error: "Organization not found" }, { status: 404 })
+    // }
 
-    // Fetch cases
-    let query = supabase.from("disease_cases").select("*").eq("organization_id", userRole.organization_id).limit(limit)
+    // Fetch cases - REMOVED organization filter to show all cases
+    let query = supabase.from("disease_cases").select("*").limit(limit)
 
     if (status) {
       query = query.eq("status", status)
@@ -52,32 +54,51 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const body = await request.json()
 
+    // REMOVED user authentication check to allow public access
     // Get authenticated user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    // const {
+    //   data: { user },
+    // } = await supabase.auth.getUser()
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    // if (!user) {
+    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    // }
 
+    // REMOVED user organization lookup and use a default organization
     // Get user's organization
-    const { data: userRole } = await supabase
-      .from("user_roles")
-      .select("organization_id")
-      .eq("user_id", user.id)
+    // const { data: userRole } = await supabase
+    //   .from("user_roles")
+    //   .select("organization_id")
+    //   .eq("user_id", user.id)
+    //   .single()
+
+    // if (!userRole) {
+    //   return NextResponse.json({ error: "Organization not found" }, { status: 404 })
+    // }
+
+    // Create case with a default organization
+    // Create a default organization if none exists
+    const { data: newOrg } = await supabase
+      .from("organizations")
+      .insert([
+        {
+          name: "Public Organization",
+          type: "hospital",
+          location: "Unknown",
+        },
+      ])
+      .select()
       .single()
 
-    if (!userRole) {
-      return NextResponse.json({ error: "Organization not found" }, { status: 404 })
-    }
+    const organizationId = newOrg?.id
 
     // Create case
     const { data: newCase, error } = await supabase
       .from("disease_cases")
       .insert({
-        organization_id: userRole.organization_id,
-        user_id: user.id,
+        organization_id: organizationId,
+        // REMOVED user_id to allow public uploads
+        // user_id: user.id,
         ...body,
       })
       .select()

@@ -5,16 +5,16 @@ export async function POST(request: NextRequest) {
   try {
     const { organizationId, alertType, message, recipientEmails } = await request.json()
 
-    // For now, we'll log the notification and store it in the database
+    // For now, we'll log the notification and store it in the alerts table
     const supabase = await createClient()
 
-    // Store notification in database for audit trail
-    const { error } = await supabase.from("notifications").insert({
+    // Store notification in alerts table for audit trail
+    const { error } = await supabase.from("alerts").insert({
       organization_id: organizationId,
       alert_type: alertType,
       message,
-      recipient_emails: recipientEmails,
-      sent_at: new Date().toISOString(),
+      is_read: false,
+      created_at: new Date().toISOString(),
     })
 
     if (error) throw error

@@ -13,11 +13,11 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Fetch statistics
+  // Fetch statistics - REMOVED user_id filtering to show all data
   const { data: casesData } = await supabase
     .from("disease_cases")
     .select("*")
-    .eq("user_id", user?.id)
+    // Removed: .eq("user_id", user?.id)
     .order("created_at", { ascending: false })
 
   const { data: outbreaksData } = await supabase
@@ -44,7 +44,7 @@ export default async function DashboardPage() {
   // Calculate disease distribution
   const diseaseDistribution = casesData?.reduce(
     (acc, case_) => {
-      const existing = acc.find((d) => d.name === case_.disease_category)
+      const existing = acc.find((d: { name: string }) => d.name === case_.disease_category)
       if (existing) {
         existing.value += 1
       } else {
@@ -58,7 +58,7 @@ export default async function DashboardPage() {
   // Calculate cases by status
   const casesByStatus = casesData?.reduce(
     (acc, case_) => {
-      const existing = acc.find((s) => s.name === case_.status)
+      const existing = acc.find((s: { name: string }) => s.name === case_.status)
       if (existing) {
         existing.value += 1
       } else {

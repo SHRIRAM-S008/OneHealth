@@ -6,7 +6,6 @@ import Link from "next/link"
 import { NotificationBell } from "@/components/notifications/notification-bell"
 import { ToastProvider } from "@/components/notifications/toast-provider"
 import { MobileNav } from "@/components/mobile/mobile-nav"
-import { LanguageSwitcher } from "@/components/language/language-switcher"
 import { NavDropdown } from "@/components/navigation/nav-dropdown"
 
 export default async function DashboardLayout({
@@ -19,9 +18,11 @@ export default async function DashboardLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect("/auth/login")
-  }
+  // REMOVED: Redirect logic for public access
+  // Allow all users to access the dashboard (public access)
+  // if (!user) {
+  //   redirect("/auth/login")
+  // }
 
   const handleLogout = async () => {
     "use server"
@@ -41,15 +42,27 @@ export default async function DashboardLayout({
               <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">Disease Surveillance Platform</p>
             </div>
             <div className="flex items-center gap-2 md:gap-4">
-              <span className="text-xs md:text-sm text-muted-foreground hidden sm:inline">{user.email}</span>
-              <LanguageSwitcher />
+              {user ? (
+                <span className="text-xs md:text-sm text-muted-foreground hidden sm:inline">{user.email}</span>
+              ) : (
+                <span className="text-xs md:text-sm text-muted-foreground hidden sm:inline">Public Access</span>
+              )}
+              {/* REMOVED: LanguageSwitcher from dashboard header since it's now in settings */}
               <NotificationBell />
               <NavDropdown />
-              <form action={handleLogout} className="hidden sm:block">
-                <Button type="submit" variant="outline" size="sm">
-                  Logout
-                </Button>
-              </form>
+              {user ? (
+                <form action={handleLogout} className="hidden sm:block">
+                  <Button type="submit" variant="outline" size="sm">
+                    Logout
+                  </Button>
+                </form>
+              ) : (
+                <Link href="/auth/login" className="hidden sm:block">
+                  <Button variant="outline" size="sm">
+                    Login
+                  </Button>
+                </Link>
+              )}
               <MobileNav />
             </div>
           </div>

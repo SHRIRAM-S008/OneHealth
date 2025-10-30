@@ -31,26 +31,19 @@ export default function DataQualityPage() {
   const loadQualityMetrics = async () => {
     try {
       const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      // REMOVED: User authentication check for public access
+      // const {
+      //   data: { user },
+      // } = await supabase.auth.getUser()
 
-      if (!user) return
+      // if (!user) return
 
-      // Get user's organization
-      const { data: userRole } = await supabase
-        .from("user_roles")
-        .select("organization_id")
-        .eq("user_id", user.id)
-        .single()
-
-      if (!userRole) return
-
-      // Fetch all cases
+      // REMOVED: User-specific organization lookup
+      // Fetch all cases for public access
       const { data: cases } = await supabase
         .from("disease_cases")
         .select("*")
-        .eq("organization_id", userRole.organization_id)
+        // REMOVED: .eq("organization_id", userRole.organization_id)
 
       if (!cases) return
 
@@ -100,7 +93,7 @@ export default function DataQualityPage() {
       })
 
       const completenessPercentage = totalCases > 0 ? Math.round((completeCases / totalCases) * 100) : 0
-      const accuracyScore = Math.max(0, 100 - (duplicateCases / totalCases) * 10)
+      const accuracyScore = Math.max(0, 100 - (duplicateCases / Math.max(1, totalCases)) * 10)
       const consistencyScore = completenessPercentage
 
       // Generate quality issues
@@ -152,7 +145,7 @@ export default function DataQualityPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Data Quality Dashboard</h1>
-        <p className="text-muted-foreground">Monitor data completeness and accuracy</p>
+        <p className="text-muted-foreground">Public Health Data Quality Analysis</p>
       </div>
 
       {/* Quality Scores */}
@@ -213,7 +206,7 @@ export default function DataQualityPage() {
                 <div
                   className="bg-blue-600 h-2 rounded-full"
                   style={{
-                    width: `${((metrics.totalCases - metrics.missingAgeCount) / metrics.totalCases) * 100}%`,
+                    width: `${((metrics.totalCases - metrics.missingAgeCount) / Math.max(1, metrics.totalCases)) * 100}%`,
                   }}
                 />
               </div>
@@ -230,7 +223,7 @@ export default function DataQualityPage() {
                 <div
                   className="bg-green-600 h-2 rounded-full"
                   style={{
-                    width: `${((metrics.totalCases - metrics.missingLocationCount) / metrics.totalCases) * 100}%`,
+                    width: `${((metrics.totalCases - metrics.missingLocationCount) / Math.max(1, metrics.totalCases)) * 100}%`,
                   }}
                 />
               </div>
@@ -247,7 +240,7 @@ export default function DataQualityPage() {
                 <div
                   className="bg-purple-600 h-2 rounded-full"
                   style={{
-                    width: `${((metrics.totalCases - metrics.missingSymptomCount) / metrics.totalCases) * 100}%`,
+                    width: `${((metrics.totalCases - metrics.missingSymptomCount) / Math.max(1, metrics.totalCases)) * 100}%`,
                   }}
                 />
               </div>
@@ -264,7 +257,7 @@ export default function DataQualityPage() {
                 <div
                   className="bg-orange-600 h-2 rounded-full"
                   style={{
-                    width: `${((metrics.totalCases - metrics.missingOnsetDateCount) / metrics.totalCases) * 100}%`,
+                    width: `${((metrics.totalCases - metrics.missingOnsetDateCount) / Math.max(1, metrics.totalCases)) * 100}%`,
                   }}
                 />
               </div>

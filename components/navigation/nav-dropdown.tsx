@@ -5,17 +5,28 @@ import { MoreVertical, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useLanguage } from "@/hooks/use-language"
+import { translations, type TranslationKey } from "@/lib/translations"
 
 export function NavDropdown() {
   const [isOpen, setIsOpen] = useState(false)
-  const { t } = useLanguage()
+  
+  // Try to use the language context, but provide a fallback if not available
+  let t: (key: TranslationKey) => string;
+  try {
+    const context = useLanguage();
+    t = context.t;
+  } catch (error) {
+    // Fallback to English translations when context is not available
+    t = (key: TranslationKey) => translations.en[key] || key;
+  }
 
   const additionalItems = [
     { href: "/dashboard/reports", label: t("reports") },
     { href: "/dashboard/data-quality", label: t("dataQuality") },
     { href: "/dashboard/predictions", label: t("predictions") },
     { href: "/dashboard/settings", label: t("settings") },
-    { href: "/dashboard/organization", label: t("organization") },
+    // REMOVED: Organization page from dropdown since it's now integrated into settings
+    // { href: "/dashboard/organization", label: t("organization") },
   ]
 
   return (

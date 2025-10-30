@@ -39,73 +39,63 @@ export default function AnalyticsPage() {
     const fetchAnalytics = async () => {
       try {
         const supabase = createClient()
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
+        // REMOVED: User authentication check for public access
+        // const {
+        //   data: { user },
+        // } = await supabase.auth.getUser()
 
-        if (!user) return
+        // if (!user) return
 
-        // Get user's organization
-        const { data: cases } = await supabase
-          .from("disease_cases")
-          .select("*, organizations(id, name)")
-          .eq("user_id", user.id)
-          .limit(1)
+        // REMOVED: User-specific organization lookup
+        // Get all cases and outbreaks for public access
+        const { data: allCases } = await supabase.from("disease_cases").select("*")
 
-        if (cases && cases.length > 0) {
-          const orgId = cases[0].organization_id
-          setOrganization(cases[0].organizations)
+        const { data: outbreaks } = await supabase.from("outbreaks").select("*")
 
-          // Fetch all analytics data
-          const { data: allCases } = await supabase.from("disease_cases").select("*").eq("organization_id", orgId)
+        if (allCases) {
+          // Calculate statistics
+          const confirmed = allCases.filter((c) => c.status === "confirmed").length
+          const resolved = allCases.filter((c) => c.status === "resolved").length
+          setStats({
+            totalCases: allCases.length,
+            confirmedCases: confirmed,
+            resolvedCases: resolved,
+            activeOutbreaks: outbreaks?.filter((o) => o.status === "active").length || 0,
+            criticalOutbreaks: outbreaks?.filter((o) => o.severity === "critical").length || 0,
+          })
 
-          const { data: outbreaks } = await supabase.from("outbreaks").select("*")
+          // Cases trend by date
+          const trendMap = new Map<string, number>()
+          allCases.forEach((c) => {
+            const date = new Date(c.report_date).toLocaleDateString()
+            trendMap.set(date, (trendMap.get(date) || 0) + 1)
+          })
+          setCasesTrend(Array.from(trendMap.entries()).map(([date, count]) => ({ date, cases: count })))
 
-          if (allCases) {
-            // Calculate statistics
-            const confirmed = allCases.filter((c) => c.status === "confirmed").length
-            const resolved = allCases.filter((c) => c.status === "resolved").length
-            setStats({
-              totalCases: allCases.length,
-              confirmedCases: confirmed,
-              resolvedCases: resolved,
-              activeOutbreaks: outbreaks?.filter((o) => o.status === "active").length || 0,
-              criticalOutbreaks: outbreaks?.filter((o) => o.severity === "critical").length || 0,
-            })
+          // Disease distribution
+          const diseaseMap = new Map<string, number>()
+          allCases.forEach((c) => {
+            diseaseMap.set(c.disease_name, (diseaseMap.get(c.disease_name) || 0) + 1)
+          })
+          setDiseaseDistribution(Array.from(diseaseMap.entries()).map(([name, value]) => ({ name, value })))
 
-            // Cases trend by date
-            const trendMap = new Map<string, number>()
-            allCases.forEach((c) => {
-              const date = new Date(c.report_date).toLocaleDateString()
-              trendMap.set(date, (trendMap.get(date) || 0) + 1)
-            })
-            setCasesTrend(Array.from(trendMap.entries()).map(([date, count]) => ({ date, cases: count })))
+          // Status breakdown
+          setStatusBreakdown([
+            { name: "Reported", value: allCases.filter((c) => c.status === "reported").length },
+            { name: "Confirmed", value: confirmed },
+            { name: "Resolved", value: resolved },
+          ])
 
-            // Disease distribution
-            const diseaseMap = new Map<string, number>()
-            allCases.forEach((c) => {
-              diseaseMap.set(c.disease_name, (diseaseMap.get(c.disease_name) || 0) + 1)
-            })
-            setDiseaseDistribution(Array.from(diseaseMap.entries()).map(([name, value]) => ({ name, value })))
-
-            // Status breakdown
-            setStatusBreakdown([
-              { name: "Reported", value: allCases.filter((c) => c.status === "reported").length },
-              { name: "Confirmed", value: confirmed },
-              { name: "Resolved", value: resolved },
-            ])
-
-            // Age distribution
-            const ageMap = new Map<string, number>()
-            allCases.forEach((c) => {
-              if (c.patient_age) {
-                const ageGroup =
-                  c.patient_age < 18 ? "0-17" : c.patient_age < 35 ? "18-34" : c.patient_age < 50 ? "35-49" : "50+"
-                ageMap.set(ageGroup, (ageMap.get(ageGroup) || 0) + 1)
-              }
-            })
-            setAgeDistribution(Array.from(ageMap.entries()).map(([group, count]) => ({ group, count })))
-          }
+          // Age distribution
+          const ageMap = new Map<string, number>()
+          allCases.forEach((c) => {
+            if (c.patient_age) {
+              const ageGroup =
+                c.patient_age < 18 ? "0-17" : c.patient_age < 35 ? "18-34" : c.patient_age < 50 ? "35-49" : "50+"
+              ageMap.set(ageGroup, (ageMap.get(ageGroup) || 0) + 1)
+            }
+          })
+          setAgeDistribution(Array.from(ageMap.entries()).map(([group, count]) => ({ group, count })))
         }
       } catch (error) {
         console.error("Error fetching analytics:", error)
@@ -144,7 +134,7 @@ export default function AnalyticsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-          <p className="text-muted-foreground">{organization?.name}</p>
+          <p className="text-muted-foreground">Public Health Analytics</p>
         </div>
         <Button onClick={handleExportCSV} className="gap-2">
           <Download className="w-4 h-4" />
@@ -170,7 +160,7 @@ export default function AnalyticsPage() {
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.confirmedCases}</div>
             <p className="text-xs text-muted-foreground">
-              {((stats.confirmedCases / stats.totalCases) * 100).toFixed(1)}% of total
+              {stats.totalCases > 0 ? ((stats.confirmedCases / stats.totalCases) * 100).toFixed(1) : "0"}% of total
             </p>
           </CardContent>
         </Card>
@@ -181,7 +171,7 @@ export default function AnalyticsPage() {
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{stats.resolvedCases}</div>
             <p className="text-xs text-muted-foreground">
-              {((stats.resolvedCases / stats.totalCases) * 100).toFixed(1)}% of total
+              {stats.totalCases > 0 ? ((stats.resolvedCases / stats.totalCases) * 100).toFixed(1) : "0"}% of total
             </p>
           </CardContent>
         </Card>
