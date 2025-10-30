@@ -16,6 +16,36 @@ Your project is live at:
 
 **[https://vercel.com/artifactssih-4576s-projects/v0-one-health-grid-website](https://vercel.com/artifactssih-4576s-projects/v0-one-health-grid-website)**
 
+## Manual Deployment to Vercel
+
+To deploy this application manually to Vercel:
+
+1. **Prerequisites**:
+   - Create a Vercel account at [vercel.com](https://vercel.com)
+   - Install Vercel CLI: `npm install -g vercel`
+
+2. **Deploy Steps**:
+   ```bash
+   # Navigate to your project directory
+   cd onehealth-grid
+   
+   # Install dependencies
+   pnpm install
+   
+   # Deploy to Vercel
+   vercel --prod
+   ```
+
+3. **Environment Variables**:
+   Set the following environment variables in your Vercel project settings:
+   - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+
+4. **Build Settings** (if not auto-detected):
+   - Build Command: `pnpm build`
+   - Output Directory: `.next`
+   - Install Command: `pnpm install`
+
 ## Build your app
 
 Continue building your app on:
@@ -28,4 +58,3 @@ Continue building your app on:
 2. Deploy your chats from the v0 interface
 3. Changes are automatically pushed to this repository
 4. Vercel deploys the latest version from this repository
-# OneHealth

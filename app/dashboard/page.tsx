@@ -3,7 +3,7 @@ import { DiseaseChart } from "@/components/dashboard/disease-chart"
 import { CasesTrendChart } from "@/components/dashboard/cases-trend-chart"
 import { RecentCases } from "@/components/dashboard/recent-cases"
 import { OutbreakAlerts } from "@/components/dashboard/outbreak-alerts"
-import { CasesMap } from "@/components/dashboard/cases-map"
+import { CasesMapClient } from "@/components/dashboard/cases-map-client"
 import { StatisticsSummary } from "@/components/dashboard/statistics-summary"
 
 export default async function DashboardPage() {
@@ -110,7 +110,7 @@ export default async function DashboardPage() {
 
       {/* Map and Recent Cases - stack on mobile */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
-        <CasesMap cases={casesData || []} />
+        <CasesMapClient cases={casesData || []} />
         <RecentCases cases={casesData?.slice(0, 5) || []} />
       </div>
 

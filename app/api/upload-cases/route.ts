@@ -60,7 +60,13 @@ async function categorizeDiseases(diseases: string[]): Promise<Record<string, st
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
- Create a default organization if none exists
+    // Create a default organization if none exists
+    const { data: organizations } = await supabase.from("organizations").select("id").limit(1)
+    
+    let organizationId: string | undefined
+    
+    if (organizations && organizations.length === 0) {
+      // Create a default organization if none exists
       const { data: newOrg } = await supabase
         .from("organizations")
         .insert([
@@ -73,8 +79,11 @@ export async function POST(request: NextRequest) {
         .select()
         .single()
 
-      var organizationId = newOrg?.id
-    // }
+      organizationId = newOrg?.id
+    } else {
+      // Use the first existing organization
+      organizationId = organizations?.[0]?.id
+    }
 
     const formData = await request.formData()
     const file = formData.get("file") as File
